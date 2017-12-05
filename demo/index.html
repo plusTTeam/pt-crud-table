@@ -1,0 +1,39 @@
+<!DOCTYPE html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>pt-crud-table demo</title>
+<!-- TODO: Revert PATH from ../bower_components/ to ../../ -->
+    <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../bower_components/iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../pt-crud-table.html">
+
+    <custom-style>
+      <style is="custom-style" include="demo-pages-shared-styles">
+      </style>
+    </custom-style>
+  </head>
+  <body>
+    <div class="vertical-section-container centered">
+      <h3>Basic pt-crud-table demo</h3>
+      <demo-snippet>
+        <template>
+          <pt-crud-table></pt-crud-table>
+          
+          <script>
+            var table = document.querySelector('pt-crud-table');
+            table.data = [{id:1,name:"Name 1",description:"Description 1"},{id:2,name:"Name 2",description:"Description 2"}];
+            table.fields =  [
+              {name: 'id', type: 'uid'},
+              {name: 'name',label: 'Name',type: 'input',required: true,show: true},
+              {name: 'description',label: 'Description',type: 'textarea',required: true,show: true}
+			      ];
+          </script>
+        </template>
+      </demo-snippet>
+    </div>
+  </body>
+</html>

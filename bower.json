@@ -1,0 +1,26 @@
+{
+  "name": "pt-crud-table",
+  "description": "CRUD Table",
+  "main": "pt-crud-table.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0",
+    "pt-select": "plusTTeam/pt-select#^1.0.0",
+    "pt-multilang-input": "plusTTeam/pt-multilang-input#^1.0.0",
+    "pt-tags-input": "plusTTeam/pt-tags-input#^1.0.0",
+    "pt-firebase-file-uploader": "plusTTeam/pt-firebase-file-uploader#^1.0.0",
+    "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
+    "vaadin-grid": "vaadin/vaadin-grid#^4.0.0",
+    "paper-dialog-scrollable": "PolymerElements/paper-dialog-scrollable#^2.1.0",
+    "iron-form": "PolymerElements/iron-form#^2.0.1",
+    "paper-checkbox": "PolymerElements/paper-checkbox#^2.0.1",
+    "iron-iconset-svg": "PolymerElements/iron-iconset-svg#^2.1.0"
+  },
+  "devDependencies": {
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  },
+  "resolutions": {
+    "polymer": "^2.0.0"
+  }
+}
