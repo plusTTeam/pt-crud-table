@@ -14,118 +14,123 @@
 <link rel="import" href="../pt-select/pt-select.html" async>
 <link rel="import" href="../pt-tags-input/pt-tags-input.html" async>
 <link rel="import" href="../pt-firebase-file-uploader/pt-firebase-file-uploader.html" async>
+<link rel="import" href="../iron-iconset-svg/iron-iconset-svg.html" async>
 
 <dom-module id="pt-crud-table">
-  <template>
-    <style>
-     :host {
-      display: block;
-    }
+	<template>
+		<style>
+			:host {
+				display: block;
+			}
 
-    #grid {
-      min-height: 80vh;
-    }
+			#grid {
+				min-height: 80vh;
+			}
 
-    #formDialog {
-      z-index: 99999;
-      min-width: 50vw;
-      max-width: 80vw;
-    }
+			#formDialog {
+				z-index: 99999;
+				min-width: 50vw;
+				max-width: 80vw;
+			}
 
-    .mainButtons {
-      margin: 5px;
-    }
+			.mainButtons {
+				margin: 5px;
+			}
 
-    .mainButton {
-      background-color: var(--mainButtonColor, var(--paper-indigo-500));
-      color: white;
-    }
+			.mainButton {
+				background-color: var(--mainButtonBackground, var(--paper-indigo-500));
+				color: var(--mainButtonColor, white);
+			}
 
-    .deleteButton {
-      background-color: var(--paper-red-500);
-      color: white;
-    }
+			.deleteButton {
+				background-color: var(--deleteButtonBackground, var(--paper-red-500));
+				color: var(--deleteButtonColor, white);
+			}
+			paper-dialog h2 {
+				margin-top: 24px;
+			}
+		</style>
 
-    paper-dialog{
-      --paper-dialog-scrollable:{
-        @apply  --paper-dialog-scrollable;
-      };
-    }
+		<iron-iconset-svg name="crudIcons" size="24">
+			<svg>
+				<defs>
+					<g id="add-box">
+						<path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"
+						/>
+					</g>
+					<g id="create">
+						<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+						/>
+					</g>
+					<g id="delete">
+						<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+					</g>
+					<g id="search">
+						<path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+						/>
+					</g>
+				</defs>
+			</svg>
+		</iron-iconset-svg>
 
-    paper-dialog h2{
-      margin-top: 24px;
-    }
-    </style>
+		<paper-dialog id="formDialog">
+			<h2>[[title]]</h2>
+			<paper-dialog-scrollable>
+				<iron-form is="iron-form" id="ironForm" on-iron-form-presubmit="_save">
+					<form id="dataForm"></form>
+				</iron-form>
+			</paper-dialog-scrollable>
+			<hr>
+			<div>
+				<paper-button dialog-dismiss raised>[[strings.cancel]]</paper-button>
+				<paper-button autofocus on-tap="_commitForm" raised class="mainButton">[[strings.accept]]</paper-button>
+			</div>
+		</paper-dialog>
 
-<iron-iconset-svg name="icons" size="24">
-    <svg>
-      <defs>
-          <g id="add-box"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></g>
-          <g id="create"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></g>
-          <g id="delete"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></g>
-          <g id="search"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></g>
-      </defs>
-    </svg>
-  </iron-iconset-svg>
-    
-    <paper-dialog id="formDialog">
-<h2>[[title]]</h2>
-<paper-dialog-scrollable>
-<iron-form is="iron-form" id="ironForm" on-iron-form-presubmit="_save">
-<form id="dataForm"></form>
-</iron-form>
-</paper-dialog-scrollable>
-<hr>
-<div>
-<paper-button dialog-dismiss raised>Cancel</paper-button>
-<paper-button autofocus on-tap="_commitForm" raised class="mainButton">Accept</paper-button>
-</div>
-</paper-dialog>
+		<h2>[[title]]</h2>
+		<div class="mainButtons">
+			<paper-button on-tap="_add" raised class="mainButton">
+				<iron-icon icon="crudIcons:add-box"></iron-icon>
+				[[strings.create]]
+			</paper-button>
+			<paper-button on-tap="_delete" raised class="deleteButton">
+				<iron-icon icon="crudIcons:delete"></iron-icon>
+				[[strings.delete]]
+			</paper-button>
+		</div>
 
+		<vaadin-grid id="grid" items="[[data]]" navigating size="20">
 
-<div class="mainButtons">
-<paper-button on-tap="_add" raised class="mainButton">
-<iron-icon icon="add-box"></iron-icon>
-Create
-</paper-button>
-<paper-button on-tap="_delete" raised class="deleteButton">
-<iron-icon icon="delete"></iron-icon>
-Delete
-</paper-button>
-</div>
+			<vaadin-grid-selection-column auto-select>
+			</vaadin-grid-selection-column>
 
-<vaadin-grid id="grid" items="[[data]]" navigating size="20">
+			<template is="dom-repeat" items="[[_getColumns(model)]]" as="column">
+				<vaadin-grid-column>
+					<template class="header">[[column.label]]</template>
+					<template>[[_print(item,column)]]</template>
+				</vaadin-grid-column>
+			</template>
 
-<vaadin-grid-selection-column auto-select>
-</vaadin-grid-selection-column>
+			<vaadin-grid-column>
+				<template class="header">[[strings.actions]]</template>
+				<template>
+					<div class="buttons">
+						<paper-icon-button icon="crudIcons:search" on-tap="_view" item="[[item]]"></paper-icon-button>
+						<paper-icon-button icon="crudIcons:create" on-tap="_edit" item="[[item]]"></paper-icon-button>
+						<paper-icon-button icon="crudIcons:delete" on-tap="_delete" item="[[item]]"></paper-icon-button>
 
-<template is="dom-repeat" items="[[_getColumns(fields)]]" as="column">
-<vaadin-grid-column>
-<template class="header">[[column.label]]</template>
-<template>[[_print(item,column)]]</template>
-</vaadin-grid-column>
-</template>
+						<template is="dom-repeat" items="[[customActions]]" as="action">
+							<paper-icon-button icon="[[action.icon]]" on-tap="_customEvent" event="[[action.event]]" item="[[item]]"></paper-icon-button>
+						</template>
+					</div>
+				</template>
+			</vaadin-grid-column>
 
-<vaadin-grid-column>
-<template class="header">Actions</template>
-<template>
-<div class="buttons">
-<paper-icon-button icon="search" on-tap="_view" item="[[item]]"></paper-icon-button>
-<paper-icon-button icon="create" on-tap="_edit" item="[[item]]"></paper-icon-button>
-<paper-icon-button icon="delete" on-tap="_delete" item="[[item]]"></paper-icon-button>
+		</vaadin-grid>
 
-<template is="dom-repeat" items="[[extraActions]]" as="action">
-<paper-icon-button icon="[[action.icon]]" on-tap="_customEvent" event="[[action.event]]" item="[[item]]"></paper-icon-button>
-</template>
-</div>
-</template>
-</vaadin-grid-column>
+	</template>
 
-</vaadin-grid>
-
-  </template>
-
-  <script>
+	<script>
     /**
      * `pt-crud-table`
      * CRUD Table
@@ -134,292 +139,294 @@ Delete
      * @polymer
      * @demo demo/index.html
      */
-    class PtCrudTable extends Polymer.Element {
-      static get is() { return 'pt-crud-table'; }
-      static get properties(){
-        return {
-        data: Array,
-        fields: Array,
-        title: String,
-        languages: Array,
-          currentLang:String
-        }
-      }
-  
-      static get observers(){
-        return ['_dataObserver(data)'];
-      }
-  
-      connectedCallback(){
-        super.connectedCallback();
-        this.title = this.title || 'Dialog';
-        this.currentLang = this.currentLang || 'en';
-        this.languages =  this.languages || [{name: 'es', label: '🇻🇪', description: 'Spanish'}, {
-        name: 'en',
-        label: '🇺🇸',
-        description: 'English'
-        }];
-        this.extraAction = this.extraAction || [];
-      }
-  
-      _print(item, column){
-        let output = "";
-        if (item && column) {
-        try {
-          switch (column.type) {
-          case 'dropdown':
-            let itemFound = column.items.find((i) =>{
-            let value = column.path ? eval("item." + column.path) : column.name ? eval("item." + column.name) : "";
-            return i.value == value;
-            });
-            output = itemFound.label;
-            break;
-          default:
-            output = column.path ? eval("item." + column.path) : column.name ? eval("item." + column.name) : "Label not found";
-          }
-        } catch (e) {
-          console.error(e);
-        }
-        }
-        return output;
-      }
-  
-      _dataObserver(data){
-        if (data && data.length > 0) {
-        this._buildForm();
-        }
-      }
+		class PtCrudTable extends Polymer.Element {
+			static get is() { return 'pt-crud-table'; }
+			static get properties() {
+				return {
+					data: Array,
+					model: Array,
+					title: String,
+					languages: Array,
+					currentLang: String,
+					customActions: Array,
+					strings: Object
+				}
+			}
+
+			static get observers() {
+				return ['_modelObserver(model)'];
+			}
+
+			connectedCallback() {
+				super.connectedCallback();
+				this.title = this.title || 'CRUD';
+				this.currentLang = this.currentLang || 'en';
+				this.languages = this.languages || [{ name: 'es', label: '🇻🇪', description: 'Spanish' }, {
+					name: 'en',
+					label: '🇺🇸',
+					description: 'English'
+				}];
+				this.customActions = this.customActions || [];
+				this.strings = this.strings || {accept:'Accept',cancel:'Cancel',create:'Create',delete:'Delete',actions:'Actions'};
+			}
+
+			_print(item, column) {
+				let output = "";
+				if (item && column) {
+					try {
+						switch (column.type) {
+							case 'dropdown':
+								let itemFound = column.items.find((i) => {
+									let value = column.path ? eval("item." + column.path) : column.name ? eval("item." + column.name) : "";
+									return i.value == value;
+								});
+								output = itemFound.label;
+								break;
+							default:
+								output = column.path ? eval("item." + column.path) : column.name ? eval("item." + column.name) : "Label not found";
+						}
+					} catch (e) {
+						console.error(e);
+					}
+				}
+				return output;
+			}
+
+			_modelObserver(model) {
+				if (model && model.length > 0) {
+					this._buildForm(model);
+				}
+			}
 
       /***
-		 * Build the Dialog Form to Create/Edit using the configuration of fields property
+		 * Build the Dialog Form to Create/Edit using the configuration of model property
 		 * @private
 		 */
-		_buildForm(){
-		  this.$.dataForm.innerHTML = '';
-		  if (this.fields) {
-			this.fields.forEach((field) =>{
-			  try {
-				let tempElement;
-				switch (field.type.toLowerCase()) {
-				  case 'input':
-					if (field.multilang) {
-					  tempElement = document.createElement("pt-multilang-input");
-					  tempElement.languages = this.languages;
-					} else {
-					  tempElement = document.createElement("paper-input");
-					}
-					tempElement.label = field.label;
-					if (field.inputType) {
-					  tempElement.type = field.inputType;
-					}
-					break;
-				  case 'checkbox':
-					tempElement = document.createElement("paper-checkbox");
-					tempElement.innerHTML = field.label;
-					tempElement.style.display = 'block';
-					Object.defineProperty(tempElement, "value", {
-					  get: function(){
-						return this.checked;
-					  }
+			_buildForm(model) {
+				this.$.dataForm.innerHTML = '';
+				if (model) {
+					model.forEach((field) => {
+						try {
+							let tempElement;
+							switch (field.type.toLowerCase()) {
+								case 'input':
+									if (field.multilang) {
+										tempElement = document.createElement("pt-multilang-input");
+										tempElement.languages = this.languages;
+									} else {
+										tempElement = document.createElement("paper-input");
+									}
+									tempElement.label = field.label;
+									if (field.inputType) {
+										tempElement.type = field.inputType;
+									}
+									break;
+								case 'checkbox':
+									tempElement = document.createElement("paper-checkbox");
+									tempElement.innerHTML = field.label;
+									tempElement.style.display = 'block';
+									Object.defineProperty(tempElement, "value", {
+										get: function () {
+											return this.checked;
+										}
+									});
+									break;
+								case 'textarea':
+									if (field.multilang) {
+										tempElement = document.createElement("pt-multilang-input");
+										tempElement.languages = this.languages;
+										tempElement.type = 'textarea';
+									} else {
+										tempElement = document.createElement("paper-textarea");
+									}
+
+									tempElement.label = field.label;
+									tempElement.rows = 3;
+									if (field.textAreaType) {
+										tempElement.type = field.textAreaType;
+									}
+									break;
+								case 'wysiwyg':
+									tempElement = document.createElement("pt-multilang-input");
+									tempElement.languages = this.languages;
+									tempElement.type = 'wysiwyg';
+
+									tempElement.label = field.label;
+									tempElement.rows = 3;
+									if (field.textAreaType) {
+										tempElement.type = field.textAreaType;
+									}
+									break;
+								case 'dropdown':
+									tempElement = document.createElement("pt-dropdown-input");
+									tempElement.items = field.items;
+									tempElement.label = field.label ? field.label : "Select One";
+									break;
+								case 'date':
+									tempElement = tempElement || document.createElement("vaadin-date-picker");
+									tempElement.label = field.label;
+									break;
+								case 'tags':
+									if (field.multilang) {
+										tempElement = document.createElement("pt-multilang-input");
+										tempElement.languages = this.languages;
+										tempElement.type = 'tags';
+									} else {
+										tempElement = document.createElement("pt-tags-input");
+									}
+									tempElement.label = field.label;
+									break;
+								case 'image':
+									tempElement = document.createElement("pt-firebasefile-uploader");
+									tempElement.multiple = false;
+									tempElement.accept = 'image/*';
+									tempElement.label = field.label;
+									break;
+							}
+							if (tempElement) {
+								tempElement.setAttribute('name', field.name);
+								if (field.required) {
+									tempElement.setAttribute('required', true);
+									tempElement.required = field.required;
+								}
+								this.$.dataForm.appendChild(tempElement);
+								this.isReady = true;
+
+							}
+						} catch (e) {
+							console.error('Error Building Form', e);
+						}
 					});
-					break;
-				  case 'textarea':
-					if (field.multilang) {
-					  tempElement = document.createElement("pt-multilang-input");
-					  tempElement.languages = this.languages;
-					  tempElement.type = 'textarea';
-					} else {
-					  tempElement = document.createElement("paper-textarea");
-					}
-
-					tempElement.label = field.label;
-					tempElement.rows = 3;
-					if (field.textAreaType) {
-					  tempElement.type = field.textAreaType;
-					}
-					break;
-				  case 'wysiwyg':
-					tempElement = document.createElement("pt-multilang-input");
-					tempElement.languages = this.languages;
-					tempElement.type = 'wysiwyg';
-
-					tempElement.label = field.label;
-					tempElement.rows = 3;
-					if (field.textAreaType) {
-					  tempElement.type = field.textAreaType;
-					}
-					break;
-				  case 'dropdown':
-					tempElement = document.createElement("pt-dropdown-input");
-					tempElement.items = field.items;
-					tempElement.label = field.label ? field.label : "Select One";
-					break;
-				  case 'date':
-					tempElement = tempElement || document.createElement("vaadin-date-picker");
-					tempElement.label = field.label;
-					break;
-				  case 'tags':
-					if (field.multilang) {
-					  tempElement = document.createElement("pt-multilang-input");
-					  tempElement.languages = this.languages;
-					  tempElement.type = 'tags';
-					} else {
-					  tempElement = document.createElement("pt-tags-input");
-					}
-					tempElement.label = field.label;
-					break;
-				  case 'image':
-					tempElement = document.createElement("pt-firebasefile-uploader");
-					tempElement.multiple = false;
-					tempElement.accept = 'image/*';
-					tempElement.label = field.label;
-					break;
 				}
-				if (tempElement) {
-				  tempElement.setAttribute('name', field.name);
-				  if (field.required) {
-					tempElement.setAttribute('required', true);
-					tempElement.required = field.required;
-				  }
-				  this.$.dataForm.appendChild(tempElement);
-				  this.isReady = true;
+			}
+
+			_loadForm(item, readOnly) {
+				try {
+					this.$.formDialog.open();
+					this.$.dataForm.childNodes.forEach((node) => {
+						node.setAttribute('disabled', readOnly ? true : false);
+						node.disabled = readOnly ? true : false;
+						switch (node.nodeName.toLowerCase()) {
+							case 'paper-checkbox':
+								node.checked = item[node.name] ? true : false;
+								break;
+							default:
+								if (typeof node.set === 'function') {
+									node.set('value', item[node.name]);
+								} else {
+									node.value = item[node.name];
+								}
+								break;
+						}
+					});
+				} catch (e) {
+				}
+			}
+
+			_add() {
+				this.isNew = true;
+				this.isView = false;
+				this._buildForm(this.model);
+				this.$.formDialog.open();
+			}
+
+			_edit(e) {
+				try {
+					let item = e.target.item;
+					let key = this.model.find((field) => {
+						return field.type === 'uid';
+					});
+
+					this.current = item[key.name];
+					if (this.isReady && this.current) {
+						this.isNew = false;
+						this.isView = false;
+						this._loadForm(item);
+					}
+				} catch (e) {
 
 				}
-			  } catch (e) {
-				console.error('Error Building Form', e);
-			  }
-			});
-		  }
-		}
-
-		_loadForm(item, readOnly){
-		  try {
-			this.$.formDialog.open();
-			this.$.dataForm.childNodes.forEach((node) =>{
-			  node.setAttribute('disabled', readOnly ? true : false);
-			  node.disabled = readOnly ? true : false;
-			  switch (node.nodeName.toLowerCase()) {
-				case 'paper-checkbox':
-				  node.checked = item[node.name] ? true : false;
-				  break;
-				default:
-				  if (typeof node.set === 'function') {
-					node.set('value', item[node.name]);
-				  } else {
-					node.value = item[node.name];
-				  }
-				  break;
-			  }
-			});
-		  } catch (e) {
-		  }
-		}
-
-		_add(){
-		  this.isNew = true;
-		  this.isView = false;
-		  this._buildForm(true);
-		  this.$.formDialog.open();
-		}
-
-		_edit(e){
-		  try {
-			let item = e.target.item;
-			let key = this.fields.find((field) =>{
-			  return field.type === 'uid';
-			});
-
-			this.current = item[key.name];
-			if (this.isReady && this.current) {
-			  this.isNew = false;
-			  this.isView = false;
-			  this._loadForm(item);
-			  console.warn('_edit',key,item[key.name],this.isReady,item);
 			}
-		  } catch (e) {
 
-		  }
-		}
+			_delete(e) {
+				if (confirm('Are you sore delete this record?')) {
+					let removeItems = [];
+					if (this.$.grid.selectedItems && this.$.grid.selectedItems.length > 0) {
+						removeItems = this.$.grid.selectedItems.slice();
 
-		_delete(e){
-		  if (confirm('Are you sore delete this record?')) {
-			let removeItems = [];
-			if (this.$.grid.selectedItems && this.$.grid.selectedItems.length > 0) {
-			  removeItems = this.$.grid.selectedItems.slice();
-
-			} else if (e.target.item) {
-			  removeItems.push(e.target.item);
+					} else if (e.target.item) {
+						removeItems.push(e.target.item);
+					}
+					if (removeItems.length > 0) {
+						this.dispatchEvent(new CustomEvent('delete', {
+							detail: { data: removeItems }
+						}));
+						this.dispatchEvent(new CustomEvent("show-toast", {
+							bubbles: true,
+							composed: true,
+							detail: { text: 'Item deleted successfully' }
+						}));
+					}
+				}
 			}
-			if (removeItems.length > 0) {
-			  this.dispatchEvent(new CustomEvent('delete', {
-				detail: {data: removeItems}
-			  }));
-			  this.dispatchEvent(new CustomEvent("show-toast", {
-				bubbles: true,
-				composed: true,
-				detail: {text: 'Item deleted successfully'}
-			  }));
+
+			_view(e) {
+				let item = e.target.item;
+				this.isView = true;
+				this._loadForm(item, true);
 			}
-		  }
-		}
 
-		_view(e){
-		  let item = e.target.item;
-		  this.isView = true;
-		  this._loadForm(item, true);
-		}
-
-		_commitForm(){
-		  if (!this.isView) {
-			this.$.ironForm.submit();
-		  } else {
-			this.$.formDialog.close();
-		  }
-		}
-
-		_save(event){
-		  event.preventDefault();
-		  this.$.formDialog.close();
-		  let newData = this.$.ironForm.serializeForm();
-		  this.fields.forEach((field) =>{
-			switch (field.type) {
-			  case 'checkbox':
-				newData[field.name] = newData[field.name] || false;
-				break;
+			_commitForm() {
+				if (!this.isView) {
+					this.$.ironForm.submit();
+				} else {
+					this.$.formDialog.close();
+				}
 			}
-		  });
-		  let eventName = this.isNew ? 'create' : 'update';
-		  this.dispatchEvent(new CustomEvent(eventName, {
-			detail: {data: newData, uid: this.current}
-		  }));
-		  this.dispatchEvent(new CustomEvent("show-toast", {
-			bubbles: true,
-			composed: true,
-			detail: {text: eventName === 'create' ? 'Item created successfully' : 'Item updated successfully'}
-		  }));
 
+			_save(event) {
+				event.preventDefault();
+				this.$.formDialog.close();
+				let newData = this.$.ironForm.serializeForm();
+				this.model.forEach((field) => {
+					switch (field.type) {
+						case 'checkbox':
+							newData[field.name] = newData[field.name] || false;
+							break;
+					}
+				});
+				let eventName = this.isNew ? 'create' : 'update';
+				this.dispatchEvent(new CustomEvent(eventName, {
+					detail: { data: newData, uid: this.current }
+				}));
+				this.dispatchEvent(new CustomEvent("show-toast", {
+					bubbles: true,
+					composed: true,
+					detail: { text: eventName === 'create' ? 'Item created successfully' : 'Item updated successfully' }
+				}));
+
+			}
+
+			_getColumns(model) {
+				if (model && model.length > 0) {
+					return model.filter((item) => {
+						return item.show;
+					});
+				}
+				return [];
+			}
+
+			_customEvent(e) {
+				let item = e.target.item;
+				let eventName = e.target.event;
+				this.dispatchEvent(new CustomEvent(eventName, {
+					bubbles: true,
+					composed: true,
+					detail: { item: item }
+				}));
+			}
 		}
 
-		_getColumns(fields){
-		  if (fields && fields.length > 0) {
-			return fields.filter((item) =>{
-			  return item.show;
-			});
-		  }
-		  return [];
-		}
-
-		_customEvent(e){
-		  let item = e.target.item;
-		  let eventName = e.target.event;
-		  this.dispatchEvent(new CustomEvent(eventName, {
-			bubbles: true,
-			composed: true,
-			detail: {item: item}
-		  }));
-		}
-    }
-
-    window.customElements.define(PtCrudTable.is, PtCrudTable);
-  </script>
+		window.customElements.define(PtCrudTable.is, PtCrudTable);
+	</script>
 </dom-module>
