@@ -89,11 +89,11 @@
 
 		<h2>[[title]]</h2>
 		<div class="mainButtons">
-			<paper-button on-tap="_add" raised class="mainButton">
+			<paper-button title="[[strings.create]]" on-tap="_add" raised class="mainButton">
 				<iron-icon icon="crudIcons:add-box"></iron-icon>
 				[[strings.create]]
 			</paper-button>
-			<paper-button on-tap="_delete" raised class="deleteButton">
+			<paper-button title="[[strings.delete]]" on-tap="_delete" raised class="deleteButton">
 				<iron-icon icon="crudIcons:delete"></iron-icon>
 				[[strings.delete]]
 			</paper-button>
@@ -115,9 +115,9 @@
 				<template class="header">[[strings.actions]]</template>
 				<template>
 					<div class="buttons">
-						<paper-icon-button icon="crudIcons:search" on-tap="_view" item="[[item]]"></paper-icon-button>
-						<paper-icon-button icon="crudIcons:create" on-tap="_edit" item="[[item]]"></paper-icon-button>
-						<paper-icon-button icon="crudIcons:delete" on-tap="_delete" item="[[item]]"></paper-icon-button>
+						<paper-icon-button title="[[strings.view]]" icon="crudIcons:search" on-tap="_view" item="[[item]]"></paper-icon-button>
+						<paper-icon-button title="[[strings.edit]]" icon="crudIcons:create" on-tap="_edit" item="[[item]]"></paper-icon-button>
+						<paper-icon-button title="[[strings.delete]]" icon="crudIcons:delete" on-tap="_delete" item="[[item]]"></paper-icon-button>
 
 						<template is="dom-repeat" items="[[customActions]]" as="action">
 							<paper-icon-button title="[[action.title]]" icon="[[action.icon]]" on-tap="_customEvent" event="[[action.event]]" item="[[item]]"></paper-icon-button>
@@ -167,7 +167,7 @@
 					description: 'English'
 				}];
 				this.customActions = this.customActions || [];
-				this.strings = this.strings || {accept:'Accept',cancel:'Cancel',create:'Create',delete:'Delete',actions:'Actions'};
+				this.strings = this.strings || {accept:'Accept',cancel:'Cancel',create:'Create',delete:'Delete',actions:'Actions',edit:'Edit',view:'View'};
 			}
 
 			_print(item, column) {
@@ -221,10 +221,13 @@
 										tempElement.type = field.inputType;
 									}
 									break;
-								case 'number':
+								
+								case 'float':
 									tempElement = document.createElement("paper-input");
-									tempElement.type = "number";
 									tempElement.step = "0.01";
+								case 'integer':
+									tempElement = tempElement || document.createElement("paper-input");
+									tempElement.type = "number";
 									tempElement.label = field.label;
 									break;
 								case 'checkbox':
