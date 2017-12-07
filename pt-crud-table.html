@@ -120,7 +120,7 @@
 						<paper-icon-button icon="crudIcons:delete" on-tap="_delete" item="[[item]]"></paper-icon-button>
 
 						<template is="dom-repeat" items="[[customActions]]" as="action">
-							<paper-icon-button icon="[[action.icon]]" on-tap="_customEvent" event="[[action.event]]" item="[[item]]"></paper-icon-button>
+							<paper-icon-button title="[[action.title]]" icon="[[action.icon]]" on-tap="_customEvent" event="[[action.event]]" item="[[item]]"></paper-icon-button>
 						</template>
 					</div>
 				</template>
@@ -220,6 +220,12 @@
 									if (field.inputType) {
 										tempElement.type = field.inputType;
 									}
+									break;
+								case 'number':
+									tempElement = document.createElement("paper-input");
+									tempElement.type = "number";
+									tempElement.step = "0.01";
+									tempElement.label = field.label;
 									break;
 								case 'checkbox':
 									tempElement = document.createElement("paper-checkbox");
