@@ -175,7 +175,7 @@
 				if (item && column) {
 					try {
 						switch (column.type) {
-							case 'dropdown':
+							case 'select':
 								let itemFound = column.items.find((i) => {
 									let value = column.path ? eval("item." + column.path) : column.name ? eval("item." + column.name) : "";
 									return i.value == value;
@@ -216,6 +216,7 @@
 									} else {
 										tempElement = document.createElement("paper-input");
 									}
+									tempElement.autoValidate = true;
 									tempElement.label = field.label;
 									if (field.inputType) {
 										tempElement.type = field.inputType;
@@ -224,10 +225,12 @@
 								
 								case 'float':
 									tempElement = document.createElement("paper-input");
+									tempElement.autoValidate = true;
 									tempElement.step = "0.01";
 								case 'integer':
 									tempElement = tempElement || document.createElement("paper-input");
 									tempElement.type = "number";
+									tempElement.autoValidate = true;
 									tempElement.label = field.label;
 									break;
 								case 'checkbox':
@@ -248,7 +251,6 @@
 									} else {
 										tempElement = document.createElement("paper-textarea");
 									}
-
 									tempElement.label = field.label;
 									tempElement.rows = 3;
 									if (field.textAreaType) {
@@ -259,17 +261,19 @@
 									tempElement = document.createElement("pt-multilang-input");
 									tempElement.languages = this.languages;
 									tempElement.type = 'wysiwyg';
-
 									tempElement.label = field.label;
 									tempElement.rows = 3;
 									if (field.textAreaType) {
 										tempElement.type = field.textAreaType;
 									}
 									break;
-								case 'dropdown':
-									tempElement = document.createElement("pt-dropdown-input");
-									tempElement.items = field.items;
-									tempElement.label = field.label ? field.label : "Select One";
+								case 'select':
+									tempElement = document.createElement("pt-select");
+									tempElement.options = field.items;
+									tempElement.placeholder = "Select One";
+									tempElement.label = field.label;
+									tempElement.pathToValue = field.pathToValue || 'value';
+									tempElement.pathToLabel = field.pathToValue || 'label';
 									break;
 								case 'date':
 									tempElement = tempElement || document.createElement("vaadin-date-picker");
