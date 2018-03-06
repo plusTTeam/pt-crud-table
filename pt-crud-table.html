@@ -46,6 +46,7 @@
 				background-color: var(--deleteButtonBackground, var(--paper-red-500));
 				color: var(--deleteButtonColor, white);
 			}
+
 			paper-dialog h2 {
 				margin-top: 24px;
 			}
@@ -63,7 +64,7 @@
 						/>
 					</g>
 					<g id="delete">
-						<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+						<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
 					</g>
 					<g id="search">
 						<path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
@@ -115,12 +116,16 @@
 				<template class="header">[[strings.actions]]</template>
 				<template>
 					<div class="buttons">
-						<paper-icon-button title="[[strings.view]]" icon="crudIcons:search" on-tap="_view" item="[[item]]"></paper-icon-button>
-						<paper-icon-button title="[[strings.edit]]" icon="crudIcons:create" on-tap="_edit" item="[[item]]"></paper-icon-button>
-						<paper-icon-button title="[[strings.delete]]" icon="crudIcons:delete" on-tap="_delete" item="[[item]]"></paper-icon-button>
+						<paper-icon-button title="[[strings.view]]" icon="crudIcons:search" on-tap="_view"
+						                   item="[[item]]"></paper-icon-button>
+						<paper-icon-button title="[[strings.edit]]" icon="crudIcons:create" on-tap="_edit"
+						                   item="[[item]]"></paper-icon-button>
+						<paper-icon-button title="[[strings.delete]]" icon="crudIcons:delete" on-tap="_delete"
+						                   item="[[item]]"></paper-icon-button>
 
 						<template is="dom-repeat" items="[[customActions]]" as="action">
-							<paper-icon-button title="[[action.title]]" icon="[[action.icon]]" on-tap="_customEvent" event="[[action.event]]" item="[[item]]"></paper-icon-button>
+							<paper-icon-button title="[[action.title]]" icon="[[action.icon]]" on-tap="_customEvent"
+							                   event="[[action.event]]" item="[[item]]"></paper-icon-button>
 						</template>
 					</div>
 				</template>
@@ -131,315 +136,329 @@
 	</template>
 
 	<script>
-    /**
-     * `pt-crud-table`
-     * CRUD Table
-     *
-     * @customElement
-     * @polymer
-     * @demo demo/index.html
-     */
-		class PtCrudTable extends Polymer.Element {
-			static get is() { return 'pt-crud-table'; }
-			static get properties() {
-				return {
-					data: Array,
-					model: Array,
-					title: String,
-					languages: Array,
-					currentLang: String,
-					customActions: Array,
-					strings: Object
+	  /**
+	   * `pt-crud-table`
+	   * CRUD Table
+	   *
+	   * @customElement
+	   * @polymer
+	   * @demo demo/index.html
+	   */
+	  class PtCrudTable extends Polymer.Element {
+		static get is(){
+		  return 'pt-crud-table';
+		}
+
+		static get properties(){
+		  return {
+			data: Array,
+			model: Array,
+			title: String,
+			languages: Array,
+			currentLang: String,
+			customActions: Array,
+			strings: Object
+		  }
+		}
+
+		static get observers(){
+		  return ['_modelObserver(model)'];
+		}
+
+		connectedCallback(){
+		  super.connectedCallback();
+		  this.title = this.title || 'CRUD';
+		  this.currentLang = this.currentLang || 'en';
+		  this.languages = this.languages || [{name: 'es', label: '🇻🇪', description: 'Spanish'}, {
+			name: 'en',
+			label: '🇺🇸',
+			description: 'English'
+		  }];
+		  this.customActions = this.customActions || [];
+		  this.strings = this.strings || {
+			accept: 'Accept',
+			cancel: 'Cancel',
+			create: 'Create',
+			delete: 'Delete',
+			actions: 'Actions',
+			edit: 'Edit',
+			view: 'View'
+		  };
+		}
+
+		_print(item, column){
+		  let output = "";
+		  if (item && column) {
+			try {
+			  switch (column.type) {
+				case 'select':
+				  let itemFound = column.items.find((i) =>{
+					let value = typeof item[column.path] !== 'undefined' ? item[column.path] : typeof item[column.name] !== 'undefined' ? item[column.name] : 'Label not found';
+					value = column.multilang ? value[this.currentLang] : value;
+					return i.value == value;
+				  });
+				  output = itemFound.label;
+				  break;
+				default: {
+				  output = typeof item[column.path] !== 'undefined' ? item[column.path] : typeof item[column.name] !== 'undefined' ? item[column.name] : 'Label not found';
+				  output = column.multilang ? output[this.currentLang] : output;
+				  break;
 				}
+			  }
+			} catch (e) {
+			  console.error(e);
 			}
+		  }
+		  return output;
+		}
 
-			static get observers() {
-				return ['_modelObserver(model)'];
-			}
+		_modelObserver(model){
+		  if (model && model.length > 0) {
+			this._buildForm(model);
+		  }
+		}
 
-			connectedCallback() {
-				super.connectedCallback();
-				this.title = this.title || 'CRUD';
-				this.currentLang = this.currentLang || 'en';
-				this.languages = this.languages || [{ name: 'es', label: '🇻🇪', description: 'Spanish' }, {
-					name: 'en',
-					label: '🇺🇸',
-					description: 'English'
-				}];
-				this.customActions = this.customActions || [];
-				this.strings = this.strings || {accept:'Accept',cancel:'Cancel',create:'Create',delete:'Delete',actions:'Actions',edit:'Edit',view:'View'};
-			}
-
-			_print(item, column) {
-				let output = "";
-				if (item && column) {
-					try {
-						switch (column.type) {
-							case 'select':
-								let itemFound = column.items.find((i) => {
-									let value = column.path ? eval("item." + column.path) : column.name ? eval("item." + column.name) : "";
-									return i.value == value;
-								});
-								output = itemFound.label;
-								break;
-							default:
-								output = column.path ? eval("item." + column.path) : column.name ? eval("item." + column.name) : "Label not found";
-						}
-					} catch (e) {
-						console.error(e);
-					}
-				}
-				return output;
-			}
-
-			_modelObserver(model) {
-				if (model && model.length > 0) {
-					this._buildForm(model);
-				}
-			}
-
-      /***
+		/***
 		 * Build the Dialog Form to Create/Edit using the configuration of model property
 		 * @private
 		 */
-			_buildForm(model) {
-				this.$.dataForm.innerHTML = '';
-				if (model) {
-					model.forEach((field) => {
-						try {
-							let tempElement;
-							switch (field.type.toLowerCase()) {
-								case 'input':
-									if (field.multilang) {
-										tempElement = document.createElement("pt-multilang-input");
-										tempElement.languages = this.languages;
-									} else {
-										tempElement = document.createElement("paper-input");
-									}
-									tempElement.autoValidate = true;
-									tempElement.label = field.label;
-									if (field.inputType) {
-										tempElement.type = field.inputType;
-									}
-									break;
-								
-								case 'float':
-									tempElement = document.createElement("paper-input");
-									tempElement.autoValidate = true;
-									tempElement.step = "0.01";
-								case 'integer':
-									tempElement = tempElement || document.createElement("paper-input");
-									tempElement.type = "number";
-									tempElement.autoValidate = true;
-									tempElement.label = field.label;
-									break;
-								case 'checkbox':
-									tempElement = document.createElement("paper-checkbox");
-									tempElement.innerHTML = field.label;
-									tempElement.style.display = 'block';
-									Object.defineProperty(tempElement, "value", {
-										get: function () {
-											return this.checked;
-										}
-									});
-									break;
-								case 'textarea':
-									if (field.multilang) {
-										tempElement = document.createElement("pt-multilang-input");
-										tempElement.languages = this.languages;
-										tempElement.type = 'textarea';
-									} else {
-										tempElement = document.createElement("paper-textarea");
-									}
-									tempElement.label = field.label;
-									tempElement.rows = 3;
-									if (field.textAreaType) {
-										tempElement.type = field.textAreaType;
-									}
-									break;
-								case 'wysiwyg':
-									tempElement = document.createElement("pt-multilang-input");
-									tempElement.languages = this.languages;
-									tempElement.type = 'wysiwyg';
-									tempElement.label = field.label;
-									tempElement.rows = 3;
-									if (field.textAreaType) {
-										tempElement.type = field.textAreaType;
-									}
-									break;
-								case 'select':
-									tempElement = document.createElement("pt-select");
-									tempElement.options = field.items;
-									tempElement.placeholder = "Select One";
-									tempElement.label = field.label;
-									tempElement.pathToValue = field.pathToValue || 'value';
-									tempElement.pathToLabel = field.pathToValue || 'label';
-									break;
-								case 'date':
-									tempElement = tempElement || document.createElement("vaadin-date-picker");
-									tempElement.label = field.label;
-									break;
-								case 'tags':
-									if (field.multilang) {
-										tempElement = document.createElement("pt-multilang-input");
-										tempElement.languages = this.languages;
-										tempElement.type = 'tags';
-									} else {
-										tempElement = document.createElement("pt-tags-input");
-									}
-									tempElement.label = field.label;
-									break;
-								case 'image':
-									tempElement = document.createElement("pt-firebasefile-uploader");
-									tempElement.multiple = false;
-									tempElement.accept = 'image/*';
-									tempElement.label = field.label;
-									break;
-							}
-							if (tempElement) {
-								tempElement.setAttribute('name', field.name);
-								if (field.required) {
-									tempElement.setAttribute('required', true);
-									tempElement.required = field.required;
-								}
-								this.$.dataForm.appendChild(tempElement);
-								this.isReady = true;
-
-							}
-						} catch (e) {
-							console.error('Error Building Form', e);
-						}
-					});
-				}
-			}
-
-			_loadForm(item, readOnly) {
-				try {
-					this.$.formDialog.open();
-					this.$.dataForm.childNodes.forEach((node) => {
-						node.setAttribute('disabled', readOnly ? true : false);
-						node.disabled = readOnly ? true : false;
-						switch (node.nodeName.toLowerCase()) {
-							case 'paper-checkbox':
-								node.checked = item[node.name] ? true : false;
-								break;
-							default:
-								if (typeof node.set === 'function') {
-									node.set('value', item[node.name]);
-								} else {
-									node.value = item[node.name];
-								}
-								break;
-						}
-					});
-				} catch (e) {
-				}
-			}
-
-			_add() {
-				this.isNew = true;
-				this.isView = false;
-				this._buildForm(this.model);
-				this.$.formDialog.open();
-			}
-
-			_edit(e) {
-				try {
-					let item = e.target.item;
-					let key = this.model.find((field) => {
-						return field.type === 'uid';
-					});
-
-					this.current = item[key.name];
-					if (this.isReady && this.current) {
-						this.isNew = false;
-						this.isView = false;
-						this._loadForm(item);
+		_buildForm(model){
+		  this.$.dataForm.innerHTML = '';
+		  if (model) {
+			model.forEach((field) =>{
+			  try {
+				let tempElement;
+				switch (field.type.toLowerCase()) {
+				  case 'input':
+					if (field.multilang) {
+					  tempElement = document.createElement("pt-multilang-input");
+					  tempElement.languages = this.languages;
+					} else {
+					  tempElement = document.createElement("paper-input");
 					}
-				} catch (e) {
-
-				}
-			}
-
-			_delete(e) {
-				if (confirm('Are you sore delete this record?')) {
-					let removeItems = [];
-					if (this.$.grid.selectedItems && this.$.grid.selectedItems.length > 0) {
-						removeItems = this.$.grid.selectedItems.slice();
-
-					} else if (e.target.item) {
-						removeItems.push(e.target.item);
+					tempElement.autoValidate = true;
+					tempElement.label = field.label;
+					if (field.inputType) {
+					  tempElement.type = field.inputType;
 					}
-					if (removeItems.length > 0) {
-						this.dispatchEvent(new CustomEvent('delete', {
-							detail: { data: removeItems }
-						}));
-						this.dispatchEvent(new CustomEvent("show-toast", {
-							bubbles: true,
-							composed: true,
-							detail: { text: 'Item deleted successfully' }
-						}));
-					}
-				}
-			}
+					break;
 
-			_view(e) {
-				let item = e.target.item;
-				this.isView = true;
-				this._loadForm(item, true);
-			}
-
-			_commitForm() {
-				if (!this.isView) {
-					this.$.ironForm.submit();
-				} else {
-					this.$.formDialog.close();
-				}
-			}
-
-			_save(event) {
-				event.preventDefault();
-				this.$.formDialog.close();
-				let newData = this.$.ironForm.serializeForm();
-				this.model.forEach((field) => {
-					switch (field.type) {
-						case 'checkbox':
-							newData[field.name] = newData[field.name] || false;
-							break;
-					}
-				});
-				let eventName = this.isNew ? 'create' : 'update';
-				this.dispatchEvent(new CustomEvent(eventName, {
-					detail: { data: newData, uid: this.current }
-				}));
-				this.dispatchEvent(new CustomEvent("show-toast", {
-					bubbles: true,
-					composed: true,
-					detail: { text: eventName === 'create' ? 'Item created successfully' : 'Item updated successfully' }
-				}));
-
-			}
-
-			_getColumns(model) {
-				if (model && model.length > 0) {
-					return model.filter((item) => {
-						return item.show;
+				  case 'float':
+					tempElement = document.createElement("paper-input");
+					tempElement.autoValidate = true;
+					tempElement.step = "0.01";
+				  case 'integer':
+					tempElement = tempElement || document.createElement("paper-input");
+					tempElement.type = "number";
+					tempElement.autoValidate = true;
+					tempElement.label = field.label;
+					break;
+				  case 'checkbox':
+					tempElement = document.createElement("paper-checkbox");
+					tempElement.innerHTML = field.label;
+					tempElement.style.display = 'block';
+					Object.defineProperty(tempElement, "value", {
+					  get: function(){
+						return this.checked;
+					  }
 					});
+					break;
+				  case 'textarea':
+					if (field.multilang) {
+					  tempElement = document.createElement("pt-multilang-input");
+					  tempElement.languages = this.languages;
+					  tempElement.type = 'textarea';
+					} else {
+					  tempElement = document.createElement("paper-textarea");
+					}
+					tempElement.label = field.label;
+					tempElement.rows = 3;
+					if (field.textAreaType) {
+					  tempElement.type = field.textAreaType;
+					}
+					break;
+				  case 'wysiwyg':
+					tempElement = document.createElement("pt-multilang-input");
+					tempElement.languages = this.languages;
+					tempElement.type = 'wysiwyg';
+					tempElement.label = field.label;
+					tempElement.rows = 3;
+					if (field.textAreaType) {
+					  tempElement.type = field.textAreaType;
+					}
+					break;
+				  case 'select':
+					tempElement = document.createElement("pt-select");
+					tempElement.options = field.items;
+					tempElement.placeholder = "Select One";
+					tempElement.label = field.label;
+					tempElement.pathToValue = field.pathToValue || 'value';
+					tempElement.pathToLabel = field.pathToValue || 'label';
+					break;
+				  case 'date':
+					tempElement = tempElement || document.createElement("vaadin-date-picker");
+					tempElement.label = field.label;
+					break;
+				  case 'tags':
+					if (field.multilang) {
+					  tempElement = document.createElement("pt-multilang-input");
+					  tempElement.languages = this.languages;
+					  tempElement.type = 'tags';
+					} else {
+					  tempElement = document.createElement("pt-tags-input");
+					}
+					tempElement.label = field.label;
+					break;
+				  case 'image':
+					tempElement = document.createElement("pt-firebasefile-uploader");
+					tempElement.multiple = false;
+					tempElement.accept = 'image/*';
+					tempElement.label = field.label;
+					break;
 				}
-				return [];
-			}
+				if (tempElement) {
+				  tempElement.setAttribute('name', field.name);
+				  if (field.required) {
+					tempElement.setAttribute('required', true);
+					tempElement.required = field.required;
+				  }
+				  this.$.dataForm.appendChild(tempElement);
+				  this.isReady = true;
 
-			_customEvent(e) {
-				let item = e.target.item;
-				let eventName = e.target.event;
-				this.dispatchEvent(new CustomEvent(eventName, {
-					bubbles: true,
-					composed: true,
-					detail: { item: item }
-				}));
-			}
+				}
+			  } catch (e) {
+				console.error('Error Building Form', e);
+			  }
+			});
+		  }
 		}
 
-		window.customElements.define(PtCrudTable.is, PtCrudTable);
+		_loadForm(item, readOnly){
+		  try {
+			this.$.formDialog.open();
+			this.$.dataForm.childNodes.forEach((node) =>{
+			  node.setAttribute('disabled', readOnly ? true : false);
+			  node.disabled = readOnly ? true : false;
+			  switch (node.nodeName.toLowerCase()) {
+				case 'paper-checkbox':
+				  node.checked = item[node.name] ? true : false;
+				  break;
+				default:
+				  if (typeof node.set === 'function') {
+					node.set('value', item[node.name]);
+				  } else {
+					node.value = item[node.name];
+				  }
+				  break;
+			  }
+			});
+		  } catch (e) {
+		  }
+		}
+
+		_add(){
+		  this.isNew = true;
+		  this.isView = false;
+		  this._buildForm(this.model);
+		  this.$.formDialog.open();
+		}
+
+		_edit(e){
+		  try {
+			let item = e.target.item;
+			let key = this.model.find((field) =>{
+			  return field.type === 'uid';
+			});
+
+			this.current = item[key.name];
+			if (this.isReady && this.current) {
+			  this.isNew = false;
+			  this.isView = false;
+			  this._loadForm(item);
+			}
+		  } catch (e) {
+
+		  }
+		}
+
+		_delete(e){
+		  if (confirm('Are you sore delete this record?')) {
+			let removeItems = [];
+			if (this.$.grid.selectedItems && this.$.grid.selectedItems.length > 0) {
+			  removeItems = this.$.grid.selectedItems.slice();
+
+			} else if (e.target.item) {
+			  removeItems.push(e.target.item);
+			}
+			if (removeItems.length > 0) {
+			  this.dispatchEvent(new CustomEvent('delete', {
+				detail: {data: removeItems}
+			  }));
+			  this.dispatchEvent(new CustomEvent("show-toast", {
+				bubbles: true,
+				composed: true,
+				detail: {text: 'Item deleted successfully'}
+			  }));
+			}
+		  }
+		}
+
+		_view(e){
+		  let item = e.target.item;
+		  this.isView = true;
+		  this._loadForm(item, true);
+		}
+
+		_commitForm(){
+		  if (!this.isView) {
+			this.$.ironForm.submit();
+		  } else {
+			this.$.formDialog.close();
+		  }
+		}
+
+		_save(event){
+		  event.preventDefault();
+		  this.$.formDialog.close();
+		  let newData = this.$.ironForm.serializeForm();
+		  this.model.forEach((field) =>{
+			switch (field.type) {
+			  case 'checkbox':
+				newData[field.name] = newData[field.name] || false;
+				break;
+			}
+		  });
+		  let eventName = this.isNew ? 'create' : 'update';
+		  this.dispatchEvent(new CustomEvent(eventName, {
+			detail: {data: newData, uid: this.current}
+		  }));
+		  this.dispatchEvent(new CustomEvent("show-toast", {
+			bubbles: true,
+			composed: true,
+			detail: {text: eventName === 'create' ? 'Item created successfully' : 'Item updated successfully'}
+		  }));
+		}
+
+		_getColumns(model){
+		  if (model && model.length > 0) {
+			return model.filter((item) =>{
+			  return item.show;
+			});
+		  }
+		  return [];
+		}
+
+		_customEvent(e){
+		  let item = e.target.item;
+		  let eventName = e.target.event;
+		  this.dispatchEvent(new CustomEvent(eventName, {
+			bubbles: true,
+			composed: true,
+			detail: {item: item}
+		  }));
+		}
+	  }
+
+	  window.customElements.define(PtCrudTable.is, PtCrudTable);
 	</script>
 </dom-module>
