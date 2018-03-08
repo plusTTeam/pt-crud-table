@@ -4,7 +4,7 @@
   "main": "pt-crud-table.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
-    "pt-select": "plusTTeam/pt-select#^1.0.3",
+    "pt-select": "plusTTeam/pt-select#^1.0.6",
     "pt-multilang-input": "plusTTeam/pt-multilang-input#^1.0.3",
     "pt-tags-input": "plusTTeam/pt-tags-input#^1.0.4",
     "pt-firebase-file-uploader": "plusTTeam/pt-firebase-file-uploader#^1.0.1",

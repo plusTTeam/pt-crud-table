@@ -50,6 +50,12 @@
 			paper-dialog h2 {
 				margin-top: 24px;
 			}
+
+			paper-dialog {
+				--paper-dialog-scrollable: {
+					max-height: 50vh;
+				}
+			}
 		</style>
 
 		<iron-iconset-svg name="crudIcons" size="24">
@@ -74,7 +80,7 @@
 			</svg>
 		</iron-iconset-svg>
 
-		<paper-dialog id="formDialog">
+		<paper-dialog id="formDialog" always-on-top>
 			<h2>[[title]]</h2>
 			<paper-dialog-scrollable>
 				<iron-form is="iron-form" id="ironForm" on-iron-form-presubmit="_save">
@@ -187,26 +193,37 @@
 		}
 
 		_print(item, column){
-		  let output = "";
+		  let output = '';
 		  if (item && column) {
 			try {
 			  switch (column.type) {
+				case 'multiselect':
+				  let value = typeof item[column.path] !== 'undefined' ? item[column.path] : item[column.name];
+				  let challengesDic = column.items.filter((challenge) =>{
+					return value.find((e) =>{
+					  e === challenge.value;
+					}) !== 'undefined';
+				  });
+				  challengesDic.forEach((item) =>{
+					output = output === '' ? item.label : output + ', ' + item.label;
+				  });
+				  break;
 				case 'select':
 				  let itemFound = column.items.find((i) =>{
-					let value = typeof item[column.path] !== 'undefined' ? item[column.path] : typeof item[column.name] !== 'undefined' ? item[column.name] : 'Label not found';
+					let value = typeof item[column.path] !== 'undefined' ? item[column.path] : item[column.name];
 					value = column.multilang ? value[this.currentLang] : value;
 					return i.value == value;
 				  });
 				  output = itemFound.label;
 				  break;
 				default: {
-				  output = typeof item[column.path] !== 'undefined' ? item[column.path] : typeof item[column.name] !== 'undefined' ? item[column.name] : 'Label not found';
+				  output = typeof item[column.path] !== 'undefined' ? item[column.path] : item[column.name];
 				  output = column.multilang ? output[this.currentLang] : output;
 				  break;
 				}
 			  }
 			} catch (e) {
-			  console.error(e);
+			  output = 'Unknown';
 			}
 		  }
 		  return output;
@@ -291,6 +308,15 @@
 					tempElement = document.createElement("pt-select");
 					tempElement.options = field.items;
 					tempElement.placeholder = "Select One";
+					tempElement.label = field.label;
+					tempElement.pathToValue = field.pathToValue || 'value';
+					tempElement.pathToLabel = field.pathToValue || 'label';
+					break;
+				  case 'multiselect':
+					tempElement = document.createElement("pt-select");
+					tempElement.options = field.items;
+					tempElement.multiple = true;
+					tempElement.placeholder = "Select One or More";
 					tempElement.label = field.label;
 					tempElement.pathToValue = field.pathToValue || 'value';
 					tempElement.pathToLabel = field.pathToValue || 'label';
